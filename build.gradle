@@ -46,7 +46,7 @@ dependencies {
     compile 'org.apache.lucene:lucene-queryparser:5.5.4'
 
     // This dependency is found on compile classpath of this component and consumers.
-    compile 'com.google.guava:guava:21.0'
+    compile 'com.google.guava:guava:20.0'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'

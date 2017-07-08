@@ -4,6 +4,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.lightgrok.Indexer;
+import org.lightgrok.PathProvider;
 import org.lightgrok.Searcher;
 
 import java.util.ArrayList;
@@ -24,8 +25,10 @@ public class LightGrok {
     private List<String> arguments = new ArrayList<String>();
 
 
-    public String getGreeting() {
-        return "Done naive run.";
+    public String getUsage() {
+        return "Usage: \n" +
+            "  lightgrok -root directory    --> index directory with lightgrok \n" +
+            "  lightgrok -root directory -search key    --> search directory's index with key \n";
     }
 
 
@@ -44,12 +47,12 @@ public class LightGrok {
             return;
         }
 
-        if (root != null) {
+        if (root != null && search == null) {
             System.out.println("root is: " + root);
             Indexer.createIndexerWithRoot(root).doIndex();
             return;
         }
-        if (search != null) {
+        if (root != null && search != null) {
             System.out.println("search is: " + search);
             try {
                 Searcher.createSearcherWithRoot(root).doSearch(search);
@@ -58,7 +61,7 @@ public class LightGrok {
             }
             return;
         }
-        System.out.println( new LightGrok().getGreeting());
+        System.out.println( new LightGrok().getUsage());
     }
 
     public static void main(String[] args) {

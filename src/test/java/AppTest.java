@@ -5,8 +5,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AppTest {
-    @Test public void testAppHasAGreeting() {
+    @Test public void testAppHasAUsage() {
         LightGrok classUnderTest = new LightGrok();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
+        assertNotNull("app should have a greeting", classUnderTest.getUsage());
     }
 }

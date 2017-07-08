@@ -1,4 +1,3 @@
-
 package org.lightgrok;
 
 import java.io.BufferedReader;
@@ -43,15 +42,19 @@ public class Indexer {
     public void doIndex() {
         Date start = new Date();
         try {
-            final String indexDir = "/tmp/lightgrok/index";
-            System.out.println("Indexing to directory '" + indexDir + "'...");
+            Path indexDir = PathProvider.rootIndexDirectory();
+            final Path docDir = Paths.get(mRoot);
 
-            Directory dir = FSDirectory.open(Paths.get(indexDir));
+            indexDir = Paths.get(indexDir.toString(),
+                                 PathProvider.hashSourcePath(docDir.toString()));
+
+            System.out.println("Indexing to directory '" + indexDir.toString() + "'...");
+
+            Directory dir = FSDirectory.open(indexDir);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 
             boolean create = true;
-            final Path docDir = Paths.get(mRoot);
 
             if (create) {
                 // Create a new index in the directory, removing any
@@ -152,14 +155,14 @@ public class Indexer {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
-      
+
       // Add the path of the file as a field named "path".  Use a
-      // field that is indexed (i.e. searchable), but don't tokenize 
+      // field that is indexed (i.e. searchable), but don't tokenize
       // the field into separate words and don't index term frequency
       // or positional information:
       Field pathField = new StringField("path", file.toString(), Field.Store.YES);
       doc.add(pathField);
-      
+
       // Add the last modified date of the file a field named "modified".
       // Use a LongPoint that is indexed (i.e. efficiently filterable with
       // PointRangeQuery).  This indexes to milli-second resolution, which
@@ -168,20 +171,20 @@ public class Indexer {
       // For example the long value 2011021714 would mean
       // February 17, 2011, 2-3 PM.
       doc.add(new LongField("modified", lastModified, Field.Store.NO));
-      
+
       // Add the contents of the file to a field named "contents".  Specify a Reader,
       // so that the text of the file is tokenized and indexed, but not stored.
       // Note that FileReader expects the file to be in UTF-8 encoding.
       // If that's not the case searching for special characters will fail.
       doc.add(new TextField("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
-      
+
       if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
         // New index, so we just add the document (no old document can be there):
         System.out.println("adding " + file);
         writer.addDocument(doc);
       } else {
-        // Existing index (an old copy of this document may have been indexed) so 
-        // we use updateDocument instead to replace the old one matching the exact 
+        // Existing index (an old copy of this document may have been indexed) so
+        // we use updateDocument instead to replace the old one matching the exact
         // path, if present:
         System.out.println("updating " + file);
         writer.updateDocument(new Term("path", file.toString()), doc);
