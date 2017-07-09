@@ -14,7 +14,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileTypeDetector;
 import java.util.Date;
 
-
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.LongField;
@@ -32,9 +33,13 @@ import org.apache.lucene.store.FSDirectory;
 
 public class Indexer {
     private String mRoot = null;
+    private Logger mLogger = Logger.getLogger("lightgrok");
+
     public static Indexer createIndexerWithRoot(String root) {
         Indexer n = new Indexer();
         n.mRoot = root;
+        n.mLogger.setLevel(Level.ERROR);
+
         return n;
     }
     private Indexer() {}
@@ -48,7 +53,8 @@ public class Indexer {
             indexDir = Paths.get(indexDir.toString(),
                                  PathProvider.hashSourcePath(docDir.toString()));
 
-            System.out.println("Indexing to directory '" + indexDir.toString() + "'...");
+            //System.out.println("Indexing to directory '" + indexDir.toString() + "'...");
+            mLogger.info("Indexing to directory '" + indexDir.toString() + "'...");
 
             Directory dir = FSDirectory.open(indexDir);
             Analyzer analyzer = new StandardAnalyzer();
@@ -86,23 +92,27 @@ public class Indexer {
             writer.close();
 
             Date end = new Date();
-            System.out.println(end.getTime() - start.getTime() + " total milliseconds");
+            // System.out.println(end.getTime() - start.getTime() + " total milliseconds");
+            mLogger.info(end.getTime() - start.getTime() + " total milliseconds");
 
         } catch (IOException e) {
-            System.out.println(" caught a " + e.getClass() +
-                               "\n with message: " + e.getMessage());
+            // System.out.println(" caught a " + e.getClass() +
+            //                    "\n with message: " + e.getMessage());
+            mLogger.info(" caught a " + e.getClass() +
+                    "\n with message: " + e.getMessage());
         }
     }
 
 
-    static void indexDocs(final IndexWriter writer, Path path) throws IOException {
+    void indexDocs(final IndexWriter writer, Path path) throws IOException {
         if (Files.isDirectory(path)) {
             Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         try {
                             String fileType = Files.probeContentType(file);
-                            System.out.println(file.toString() + ":" + fileType);
+                            // System.out.println(file.toString() + ":" + fileType);
+                            mLogger.info(file.toString() + ":" + fileType);
                             if (!fileType.startsWith("text/")) {
                                 return FileVisitResult.CONTINUE;
                             }
@@ -151,7 +161,7 @@ public class Indexer {
         }
     }
 
-  static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
+  void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
@@ -179,15 +189,17 @@ public class Indexer {
       doc.add(new TextField("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
 
       if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
-        // New index, so we just add the document (no old document can be there):
-        System.out.println("adding " + file);
-        writer.addDocument(doc);
+          // New index, so we just add the document (no old document can be there):
+          // System.out.println("adding " + file);
+          mLogger.info("adding " + file);
+          writer.addDocument(doc);
       } else {
-        // Existing index (an old copy of this document may have been indexed) so
-        // we use updateDocument instead to replace the old one matching the exact
-        // path, if present:
-        System.out.println("updating " + file);
-        writer.updateDocument(new Term("path", file.toString()), doc);
+          // Existing index (an old copy of this document may have been indexed) so
+          // we use updateDocument instead to replace the old one matching the exact
+          // path, if present:
+          // System.out.println("updating " + file);
+          mLogger.info("updating " + file);
+          writer.updateDocument(new Term("path", file.toString()), doc);
       }
     }
   }

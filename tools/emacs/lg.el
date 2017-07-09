@@ -90,7 +90,8 @@ This requires the lg command to support --color-match, which is only in v0.14+"
   "Run lg searching for the STRING given in DIRECTORY.
 If REGEXP is non-nil, treat STRING as a regular expression."
   (letrec ((default-directory (file-name-as-directory directory))
-           (arguments (list "-root" default-directory)))
+           (arguments (list "-root" default-directory))
+		   (compilation-scroll-output t))
     (unless (file-exists-p default-directory)
       (error "No such directory %s" default-directory))
     (compilation-start

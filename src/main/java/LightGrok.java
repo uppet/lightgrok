@@ -1,4 +1,6 @@
 import static org.kohsuke.args4j.ExampleMode.ALL;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -33,6 +35,8 @@ public class LightGrok {
 
 
     public void doMain(String[] args) {
+		Logger logger = Logger.getLogger("lightgrok");
+		logger.setLevel(Level.ERROR);
         CmdLineParser parser = new CmdLineParser(this);
         
         parser.setUsageWidth(80);
@@ -48,12 +52,12 @@ public class LightGrok {
         }
 
         if (root != null && search == null) {
-            System.out.println("root is: " + root);
+            logger.info("root is: " + root);
             Indexer.createIndexerWithRoot(root).doIndex();
             return;
         }
         if (root != null && search != null) {
-            System.out.println("search is: " + search);
+            logger.info("search is: " + search);
             try {
                 Searcher.createSearcherWithRoot(root).doSearch(search);
             } catch (Exception e) {

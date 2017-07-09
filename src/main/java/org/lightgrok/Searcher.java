@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -28,9 +30,11 @@ public class Searcher {
     private Searcher() {}
 
     private String mRoot = null;
+	private Logger mLogger = Logger.getLogger("lightgrok");
     public static Searcher createSearcherWithRoot(String root) {
         Searcher n = new Searcher();
         n.mRoot = root;
+		n.mLogger.setLevel(Level.ERROR);
         return n;
     }
 
@@ -68,7 +72,8 @@ public class Searcher {
             }
 
             Query query = parser.parse(line);
-            System.out.println("Searching for: " + query.toString(field));
+            // System.out.println("Searching for: " + query.toString(field));
+			mLogger.info("Searching for: " + query.toString(field));
 
             doSearchInternal(searcher, query, raw, search);
 
@@ -79,7 +84,7 @@ public class Searcher {
         reader.close();
     }
 
-    public static void doSearchInternal(IndexSearcher searcher, Query query,
+    public void doSearchInternal(IndexSearcher searcher, Query query,
                                         boolean raw, String rawQuery) throws IOException {
 
         // Collect enough docs to show 5 pages
@@ -87,7 +92,7 @@ public class Searcher {
         ScoreDoc[] hits = results.scoreDocs;
 
         int numTotalHits = results.totalHits;
-        System.out.println(numTotalHits + " total matching documents");
+        mLogger.info(numTotalHits + " total matching documents");
 
         int start = 0;
         int end = Math.min(numTotalHits, 5000);
@@ -98,18 +103,18 @@ public class Searcher {
 
         for (int i = start; i < end; i++) {
             if (raw) { // output raw format
-                System.out.println("doc="+hits[i].doc+" score="+hits[i].score);
+                mLogger.info("doc="+hits[i].doc+" score="+hits[i].score);
                 // continue;
                 Document doc = searcher.doc(hits[i].doc);
                 String path = doc.get("path");
                 if (path != null) {
-                    System.out.println((i+1) + ". " + path);
+                    mLogger.info((i+1) + ". " + path);
                     String title = doc.get("title");
                     if (title != null) {
-                        System.out.println("   Title: " + doc.get("title"));
+                        mLogger.info("   Title: " + doc.get("title"));
                     }
                 } else {
-                    System.out.println((i+1) + ". " + "No path for this document");
+                    mLogger.info((i+1) + ". " + "No path for this document");
                 }
             }
 
