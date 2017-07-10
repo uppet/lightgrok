@@ -11,8 +11,18 @@ import com.google.common.hash.Hashing;
 
 
 public class PathProvider {
+    static boolean sStripRootLead = false;
+
     public static Path rootIndexDirectory() {
         return Paths.get("/tmp/lightgrok/index");
+    }
+
+    public static Boolean getStripRootLead() {
+        return sStripRootLead;
+    }
+
+    public static Boolean setStripRootLead(boolean enabled) {
+        return sStripRootLead = enabled;
     }
 
     public static String hashSourcePath(String sourcePath) {

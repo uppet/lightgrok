@@ -90,8 +90,8 @@ This requires the lg command to support --color-match, which is only in v0.14+"
   "Run lg searching for the STRING given in DIRECTORY.
 If REGEXP is non-nil, treat STRING as a regular expression."
   (letrec ((default-directory (file-name-as-directory directory))
-           (arguments (list "-root" default-directory))
-		   (compilation-scroll-output t))
+           (arguments (list "-strip-root-lead" "-root" default-directory))
+           (compilation-scroll-output t))
     (unless (file-exists-p default-directory)
       (error "No such directory %s" default-directory))
     (compilation-start
@@ -99,6 +99,19 @@ If REGEXP is non-nil, treat STRING as a regular expression."
                 (append '("lightgrok") arguments (list "-search" (lg/shell-quote string))))
      'lg-mode
      (function (lambda (ignore) (concat "*lg-" string "*"))))))
+
+(defun lg/index (directory)
+  "Run lg indexing for the DIRECTORY."
+  (letrec ((default-directory (file-name-as-directory directory))
+           (arguments (list "-root" default-directory))
+           (compilation-scroll-output t))
+    (unless (file-exists-p default-directory)
+      (error "No such directory %s" default-directory))
+    (compilation-start
+     (lg/s-join " "
+                (append '("lightgrok") arguments))
+     'lg-mode
+     (function (lambda (ignore) (concat "*lg-indexing-" default-directory "*"))))))
 
 (defun lg/search/file (string directory &optional regexp)
   "Run lg searching for the STRING given in DIRECTORY for filename.
@@ -152,6 +165,12 @@ Otherwise, get the symbol at point."
 for the given string."
   (interactive "sSearch string: ")
   (lg/search string (lg/project-root default-directory)))
+
+;;;###autoload
+(defun lg-index-project ()
+  "Index the root of the current project for lg"
+  (interactive)
+  (lg/index (lg/project-root default-directory)))
 
 ;;;###autoload
 (defun lg-project-regexp (regexp)

@@ -3,14 +3,12 @@
  */
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+//import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -27,6 +25,7 @@ public class LuceneTest {
         // For learning purpose
         Directory dir = new RAMDirectory();
         Analyzer analyzer = new StandardAnalyzer();
+        // Analyzer analyzer = new WhitespaceAnalyzer();
         IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 
         IndexWriter writer = new IndexWriter(dir, iwc);
@@ -37,7 +36,7 @@ public class LuceneTest {
         Field pathField = new StringField("path", "inside memory", Field.Store.YES);
         doc.add(pathField);
 
-        doc.add(new TextField("contents",  "a fox jump over the bron dog", Field.Store.YES));
+        doc.add(new TextField("contents",  "a - fox::jump over the bron dog", Field.Store.YES));
         writer.addDocument(doc);
 
         writer.close();
@@ -59,6 +58,22 @@ public class LuceneTest {
         tq = new TermQuery(new Term("contents", "www"));
         results = searcher.search(tq, 100);
         assertEquals(results.totalHits, 0);
+
+
+        tq = new TermQuery(new Term("contents", "-"));
+        results = searcher.search(tq, 100);
+        assertEquals(results.totalHits, 0);
+
+
+        RegexpQuery rq = new RegexpQuery(new Term("contents", "a.fox"));
+        PhraseQuery.Builder builder = new PhraseQuery.Builder();
+        builder.add(new Term("contents", "fox"), 0);
+        builder.add(new Term("contents", "over"), 2);
+        PhraseQuery pq = builder.build();
+        results = searcher.search(pq, 100);
+        assertEquals(1, results.totalHits);
+
+
 
         reader.close();
     }

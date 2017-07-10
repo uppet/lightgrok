@@ -17,7 +17,8 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+//import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -57,7 +58,8 @@ public class Indexer {
             mLogger.info("Indexing to directory '" + indexDir.toString() + "'...");
 
             Directory dir = FSDirectory.open(indexDir);
-            Analyzer analyzer = new StandardAnalyzer();
+            //Analyzer analyzer = new StandardAnalyzer();
+            Analyzer analyzer = new SimpleAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 
             boolean create = true;

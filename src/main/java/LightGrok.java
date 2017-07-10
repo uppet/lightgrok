@@ -22,6 +22,9 @@ public class LightGrok {
     @Option(name="-search")
     String search = null;
 
+    @Option(name="-strip-root-lead")
+    boolean stripRootLead = false;
+
     // receives other command line parameters than options
     @Argument
     private List<String> arguments = new ArrayList<String>();
@@ -29,7 +32,7 @@ public class LightGrok {
 
     public String getUsage() {
         return "Usage: \n" +
-            "  lightgrok -root directory    --> index directory with lightgrok \n" +
+            "  lightgrok -root directory                --> index directory with lightgrok \n" +
             "  lightgrok -root directory -search key    --> search directory's index with key \n";
     }
 
@@ -50,6 +53,8 @@ public class LightGrok {
             System.err.println();
             return;
         }
+
+        PathProvider.setStripRootLead(stripRootLead);
 
         if (root != null && search == null) {
             logger.info("root is: " + root);

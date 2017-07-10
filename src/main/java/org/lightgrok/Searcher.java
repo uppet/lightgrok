@@ -138,7 +138,12 @@ public class Searcher {
                             if (line.length() > 200) {
                                 line = line.substring(0, 200);
                             }
-                            System.out.print(path + ":" + lineCount + ":\t" + line);
+                            String reportPath = path;
+                            if (PathProvider.getStripRootLead()
+                                && path.startsWith(mRoot)) {
+                                reportPath = "./" + path.substring(mRoot.length());
+                            }
+                            System.out.print(reportPath + ":" + lineCount + ":\t" + line);
                             System.out.println();
                         }
                     }
